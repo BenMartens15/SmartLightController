@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_devices"
+        android:icon="@drawable/baseline_light_mode_24"
+        android:title="@string/title_devices" />
+
+    <item
+        android:id="@+id/navigation_profiles"
+        android:icon="@drawable/baseline_dashboard_customize_24"
+        android:title="@string/title_profiles" />
+
+    <item
+        android:id="@+id/navigation_settings"
+        android:icon="@drawable/baseline_settings_24"
+        android:title="@string/title_settings" />
+
+</menu>
