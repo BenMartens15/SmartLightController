@@ -18,6 +18,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -49,6 +50,14 @@ class DevicesFragment : Fragment() {
     private val scanSettings =
         ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
 
+    private val requestMultiplePermissions = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions(),
+    ) { permissions ->
+        permissions.entries.forEach {
+            Log.d("DEBUG", "${it.key} = ${it.value}")
+        }
+    }
+
     private var isScanning = false
 
     /*******************************************
@@ -67,11 +76,19 @@ class DevicesFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        if (!bluetoothAdapter.isEnabled) {
-            promptEnableBluetooth()
-        }
-        startBleScan()
         setupRecyclerView()
+
+        if (!checkPermissions()) {
+            Log.i("DevicesFragment", "Required permissions not granted - requesting them")
+            requestPermissions()
+        } else {
+            if (!bluetoothAdapter.isEnabled) {
+                Log.i("DevicesFragment", "Bluetooth not enabled, prompting the user to enable it")
+                promptEnableBluetooth()
+            } else {
+                startBleScan()
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -79,21 +96,6 @@ class DevicesFragment : Fragment() {
         if (requestCode == ENABLE_BLUETOOTH_REQUEST_CODE) {
             if (resultCode != Activity.RESULT_OK) { // if the user declined enabling bluetooth
                 promptEnableBluetooth()
-            }
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_FINE_LOCATION_PERMISSION) {
-            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-                startBleScan() // all permissions granted - start BLE scan
-            } else {
-                // Handle the case where some or all permissions were denied by the user
             }
         }
     }
@@ -114,18 +116,16 @@ class DevicesFragment : Fragment() {
 
     private fun promptEnableBluetooth() {
         if (!bluetoothAdapter.isEnabled) {
-            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            if (context?.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                return
-            }
             startActivityForResult(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), ENABLE_BLUETOOTH_REQUEST_CODE)
         }
     }
 
     private fun startBleScan() {
-        if (checkPermissions()) {
+        if (!checkPermissions()) {
+            Log.i("DevicesFragment", "Required permissions not granted - requesting them")
             requestPermissions()
         } else {
+            Log.i("DevicesFragment", "Starting BLE scan")
             scanResults.clear()
             scanResultAdapter.notifyDataSetChanged()
             isScanning = true
@@ -135,31 +135,38 @@ class DevicesFragment : Fragment() {
 
     private fun checkPermissions(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val coarseLocationPermission =
-                ContextCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
-
             val fineLocationPermission =
                 ContextCompat.checkSelfPermission(
                     requireContext(),
                     Manifest.permission.ACCESS_FINE_LOCATION
                 ) == PackageManager.PERMISSION_GRANTED
 
-            coarseLocationPermission && fineLocationPermission
+            val bleScanPermission =
+                ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.BLUETOOTH_SCAN
+                ) == PackageManager.PERMISSION_GRANTED
+
+            val bleConnectPermission =
+                ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) == PackageManager.PERMISSION_GRANTED
+
+            fineLocationPermission && bleScanPermission && bleConnectPermission
         } else {
             true // Prior to Android 6.0, permissions are granted at install time
         }
     }
 
     private fun requestPermissions() {
-        requestPermissions(
+        Log.i("DevicesFragment", "Requesting permissions")
+        requestMultiplePermissions.launch(
             arrayOf(
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ),
-            REQUEST_FINE_LOCATION_PERMISSION
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.BLUETOOTH_SCAN,
+                Manifest.permission.BLUETOOTH_CONNECT
+            )
         )
     }
 
