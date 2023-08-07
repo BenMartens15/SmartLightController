@@ -7,6 +7,7 @@ import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
@@ -14,6 +15,9 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.ParcelUuid
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -24,9 +28,11 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.benmartens15.smartlightcontroller.R
+import java.util.UUID
 
 private const val ENABLE_BLUETOOTH_REQUEST_CODE = 1
-private const val REQUEST_FINE_LOCATION_PERMISSION = 2
+private const val SCAN_DURATION_MS = 5000
+private const val LIGHT_CONTROLLER_NAME = "LIGHTNING-LC2444"
 
 @SuppressLint("MissingPermission") // probably figure out how to handle this properly at some point
 class DevicesFragment : Fragment() {
@@ -49,6 +55,9 @@ class DevicesFragment : Fragment() {
 
     private val scanSettings =
         ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
+
+    private val scanFilter =
+        ScanFilter.Builder().setDeviceName(LIGHT_CONTROLLER_NAME).build()
 
     private val requestMultiplePermissions = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
@@ -129,8 +138,19 @@ class DevicesFragment : Fragment() {
             scanResults.clear()
             scanResultAdapter.notifyDataSetChanged()
             isScanning = true
-            bleScanner.startScan(null, scanSettings, scanCallback)
+            bleScanner.startScan(listOf(scanFilter), scanSettings, scanCallback)
+
+            val scanHandler = Handler(Looper.getMainLooper())
+            scanHandler.postDelayed({ // stop the scan after the specified time
+                stopBleScan()
+            }, SCAN_DURATION_MS.toLong())
         }
+    }
+
+    private fun stopBleScan() {
+        Log.i("DevicesFragment", "Stopping BLE scan")
+        bleScanner.stopScan(scanCallback)
+        isScanning = false
     }
 
     private fun checkPermissions(): Boolean {

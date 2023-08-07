@@ -3,12 +3,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingBottom="56dp">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_devices"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:listitem="@layout/item_device"/>
+        tools:listitem="@layout/item_device" />
 
 </LinearLayout>
