@@ -37,17 +37,19 @@ import java.util.UUID
 
 private const val ENABLE_BLUETOOTH_REQUEST_CODE = 1
 private const val SCAN_DURATION_MS = 5000
-private const val LIGHT_CONTROLLER_NAME = "LIGHTNING-LC2444"
+private const val LIGHT_CONTROLLER_NAME = "RGB CONTROLLER"
 private val RGB_CTRL_CHARACTERISTIC_UUID = UUID.fromString("f19a2445-96fe-4d87-a476-68a7a8d0b7ba")
 
 @SuppressLint("MissingPermission") // probably figure out how to handle this properly at some point
-class DevicesFragment : Fragment(), DeviceAdapter.OnSwitchCheckedChangeListener {
+class DevicesFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
 
     private val scanResults = mutableListOf<ScanResult>()
-    private val scanResultAdapter: DeviceAdapter by lazy {
-        DeviceAdapter(scanResults, this)
+
+    private val devices = mutableListOf<BluetoothDevice>()
+    private val deviceAdapter: DeviceAdapter by lazy {
+        DeviceAdapter(devices)
     }
 
     private val bleScanner by lazy {
@@ -74,13 +76,6 @@ class DevicesFragment : Fragment(), DeviceAdapter.OnSwitchCheckedChangeListener 
     }
 
     private var isScanning = false
-
-    private lateinit var device: BluetoothDevice
-    private val characteristics by lazy {
-        ConnectionManager.servicesOnDevice(device)?.flatMap { service ->
-            service.characteristics ?: listOf()
-        } ?: listOf()
-    }
 
     /*******************************************
      * Activity function overrides
@@ -128,7 +123,7 @@ class DevicesFragment : Fragment(), DeviceAdapter.OnSwitchCheckedChangeListener 
      *******************************************/
     private fun setupRecyclerView() {
         recyclerView.apply {
-            adapter = scanResultAdapter
+            adapter = deviceAdapter
             layoutManager = LinearLayoutManager(
                 context,
                 RecyclerView.VERTICAL,
@@ -150,7 +145,8 @@ class DevicesFragment : Fragment(), DeviceAdapter.OnSwitchCheckedChangeListener 
         } else {
             Log.i("DevicesFragment", "Starting BLE scan")
             scanResults.clear()
-            scanResultAdapter.notifyDataSetChanged()
+            devices.clear()
+            deviceAdapter.notifyDataSetChanged()
             isScanning = true
             bleScanner.startScan(listOf(scanFilter), scanSettings, scanCallback)
 
@@ -216,7 +212,6 @@ class DevicesFragment : Fragment(), DeviceAdapter.OnSwitchCheckedChangeListener 
                     ConnectionManager.connect(this, requireContext())
                 }
                 scanResults.add(result)
-                scanResultAdapter.notifyItemInserted(scanResults.size - 1)
             }
         }
     }
@@ -225,35 +220,15 @@ class DevicesFragment : Fragment(), DeviceAdapter.OnSwitchCheckedChangeListener 
         ConnectionEventListener().apply {
             onConnectionSetupComplete = { gatt ->
                 Log.i("DevicesFragment", "Connection complete")
-                device = gatt.device
                 ConnectionManager.unregisterListener(this)
+                activity?.runOnUiThread {
+                    devices.add(gatt.device)
+                    deviceAdapter.notifyItemInserted(devices.size - 1)
+                }
             }
             onDisconnect = {
                 Log.i("DevicesFragment", "Disconnected")
             }
         }
     }
-
-    override fun onSwitchCheckedChanged(position: Int, isChecked: Boolean) {
-        lateinit var rgbControlCharacteristic: BluetoothGattCharacteristic
-        for (char in characteristics) {
-            if (char.uuid == RGB_CTRL_CHARACTERISTIC_UUID) {
-                rgbControlCharacteristic = char
-            }
-        }
-        if (isChecked) {
-            // write 0xff1300 to the RGB control characteristic
-            val data = "ff1300"
-            val bytes = data.hexToBytes()
-            ConnectionManager.writeCharacteristic(device, rgbControlCharacteristic, bytes)
-        } else {
-            // write 0x000000 to the RGB control characteristic
-            val data = "000000"
-            val bytes = data.hexToBytes()
-            ConnectionManager.writeCharacteristic(device, rgbControlCharacteristic, bytes)
-        }
-    }
-
-    private fun String.hexToBytes() =
-        this.chunked(2).map { it.toUpperCase(Locale.US).toInt(16).toByte() }.toByteArray()
 }
