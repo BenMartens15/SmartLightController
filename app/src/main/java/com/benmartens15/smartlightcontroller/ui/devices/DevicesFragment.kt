@@ -37,8 +37,7 @@ import java.util.UUID
 
 private const val ENABLE_BLUETOOTH_REQUEST_CODE = 1
 private const val SCAN_DURATION_MS = 5000
-private const val LIGHT_CONTROLLER_NAME = "RGB CONTROLLER"
-private val RGB_CTRL_CHARACTERISTIC_UUID = UUID.fromString("f19a2445-96fe-4d87-a476-68a7a8d0b7ba")
+private const val LIGHT_CONTROLLER_NAME = "Lightning-LC2444"
 
 @SuppressLint("MissingPermission") // probably figure out how to handle this properly at some point
 class DevicesFragment : Fragment() {
@@ -47,9 +46,9 @@ class DevicesFragment : Fragment() {
 
     private val scanResults = mutableListOf<ScanResult>()
 
-    private val devices = mutableListOf<BluetoothDevice>()
+    private val lightningDevices = mutableListOf<LightningLightController>()
     private val deviceAdapter: DeviceAdapter by lazy {
-        DeviceAdapter(devices)
+        DeviceAdapter(lightningDevices)
     }
 
     private val bleScanner by lazy {
@@ -145,7 +144,7 @@ class DevicesFragment : Fragment() {
         } else {
             Log.i("DevicesFragment", "Starting BLE scan")
             scanResults.clear()
-            devices.clear()
+            lightningDevices.clear()
             deviceAdapter.notifyDataSetChanged()
             isScanning = true
             bleScanner.startScan(listOf(scanFilter), scanSettings, scanCallback)
@@ -212,18 +211,18 @@ class DevicesFragment : Fragment() {
                     ConnectionManager.connect(this, requireContext())
                 }
                 scanResults.add(result)
+                lightningDevices.add(LightningLightController(result))
             }
         }
     }
 
     private val connectionEventListener by lazy {
         ConnectionEventListener().apply {
-            onConnectionSetupComplete = { gatt ->
+            onConnectionSetupComplete = {
                 Log.i("DevicesFragment", "Connection complete")
-                ConnectionManager.unregisterListener(this)
+//                ConnectionManager.unregisterListener(this)
                 activity?.runOnUiThread {
-                    devices.add(gatt.device)
-                    deviceAdapter.notifyItemInserted(devices.size - 1)
+                    deviceAdapter.notifyItemInserted(lightningDevices.size - 1)
                 }
             }
             onDisconnect = {
