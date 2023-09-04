@@ -174,7 +174,11 @@ object ConnectionManager {
                 Log.w("ConnectionManager", "Disconnecting from ${device.address}")
                 gatt.close()
                 deviceGattMap.remove(device)
-                listeners.forEach { it.get()?.onDisconnect?.invoke(device) }
+                listeners.forEach {
+                    if (it.get()?.device?.equals(gatt.device) == true) {
+                        it.get()?.onDisconnect?.invoke(device)
+                    }
+                }
                 signalEndOfOperation()
             }
             is CharacteristicWrite -> with(operation) {
@@ -282,7 +286,12 @@ object ConnectionManager {
                     Log.w("ConnectionManager", "Discovered ${services.size} services for ${device.address}.")
                     printGattTable()
                     requestMtu(device, GATT_MAX_MTU_SIZE)
-                    listeners.forEach { it.get()?.onConnectionSetupComplete?.invoke(this) }
+                    // call the listener for the device
+                    listeners.forEach {
+                        if (it.get()?.device?.equals(gatt.device) == true) {
+                            it.get()?.onConnectionSetupComplete?.invoke(this)
+                        }
+                    }
                 } else {
                     Log.e("ConnectionManager", "Service discovery failed due to status $status")
                     teardownConnection(gatt.device)
@@ -296,7 +305,11 @@ object ConnectionManager {
 
         override fun onMtuChanged(gatt: BluetoothGatt, mtu: Int, status: Int) {
             Log.w("ConnectionManager", "ATT MTU changed to $mtu, success: ${status == BluetoothGatt.GATT_SUCCESS}")
-            listeners.forEach { it.get()?.onMtuChanged?.invoke(gatt.device, mtu) }
+            listeners.forEach {
+                if (it.get()?.device?.equals(gatt.device) == true) {
+                    it.get()?.onMtuChanged?.invoke(gatt.device, mtu)
+                }
+            }
 
             if (pendingOperation is MtuRequest) {
                 signalEndOfOperation()
@@ -312,7 +325,12 @@ object ConnectionManager {
                 when (status) {
                     BluetoothGatt.GATT_SUCCESS -> {
                         Log.i("ConnectionManager", "Read characteristic $uuid | value: ${value.toHexString()}")
-                        listeners.forEach { it.get()?.onCharacteristicRead?.invoke(gatt.device, this) }
+                        listeners.forEach {
+                            if (it.get()?.device?.equals(gatt.device) == true) {
+                                it.get()?.onCharacteristicRead?.invoke(gatt.device, this)
+                            }
+                        }
+                        listeners.first()?.get()?.onCharacteristicRead?.invoke(gatt.device, this)
                     }
                     BluetoothGatt.GATT_READ_NOT_PERMITTED -> {
                         Log.e("ConnectionManager", "Read not permitted for $uuid!")
@@ -337,7 +355,11 @@ object ConnectionManager {
                 when (status) {
                     BluetoothGatt.GATT_SUCCESS -> {
                         Log.i("ConnectionManager", "Wrote to characteristic $uuid | value: ${value.toHexString()}")
-                        listeners.forEach { it.get()?.onCharacteristicWrite?.invoke(gatt.device, this) }
+                        listeners.forEach {
+                            if (it.get()?.device?.equals(gatt.device) == true) {
+                                it.get()?.onCharacteristicWrite?.invoke(gatt.device, this)
+                            }
+                        }
                     }
                     BluetoothGatt.GATT_WRITE_NOT_PERMITTED -> {
                         Log.e("ConnectionManager", "Write not permitted for $uuid!")
@@ -359,7 +381,11 @@ object ConnectionManager {
         ) {
             with(characteristic) {
                 Log.i("ConnectionManager", "Characteristic $uuid changed | value: ${value.toHexString()}")
-                listeners.forEach { it.get()?.onCharacteristicChanged?.invoke(gatt.device, this) }
+                listeners.forEach {
+                    if (it.get()?.device?.equals(gatt.device) == true) {
+                        it.get()?.onCharacteristicChanged?.invoke(gatt.device, this)
+                    }
+                }
             }
         }
     }

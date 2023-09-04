@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothGattDescriptor
 
 /** A listener containing callback methods to be registered with [ConnectionManager].*/
 class ConnectionEventListener {
+    var device: BluetoothDevice? = null
     var onConnectionSetupComplete: ((BluetoothGatt) -> Unit)? = null
     var onDisconnect: ((BluetoothDevice) -> Unit)? = null
     var onCharacteristicChanged: ((BluetoothDevice, BluetoothGattCharacteristic) -> Unit)? = null

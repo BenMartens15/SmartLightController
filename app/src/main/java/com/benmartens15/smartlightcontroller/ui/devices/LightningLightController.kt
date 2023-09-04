@@ -60,8 +60,8 @@ class LightningLightController(scanResult: ScanResult) {
     }
 
     private val connectionEventListener by lazy {
-        Log.i("LightningLightController", "In connectionEventListener")
         ConnectionEventListener().apply {
+            device = bleDevice
             onConnectionSetupComplete = {
                 Log.i("LightningLightController", "Connection complete")
                 readName()
@@ -75,6 +75,10 @@ class LightningLightController(scanResult: ScanResult) {
             onCharacteristicWrite = { _, characteristic ->
                 Log.i("LightningLightController","Wrote to ${characteristic.uuid}")
             }
+            onDisconnect = {
+                Log.i("LightningLightController", "Disconnected")
+                ConnectionManager.unregisterListener(this)
+            }
         }
     }
 
@@ -84,13 +88,14 @@ class LightningLightController(scanResult: ScanResult) {
     }
 
     fun setRGBColour(colour: String) {
-        val command = "0103$colour"
+        val command = "0203$colour"
 
         Log.i("LightningLightController", "Setting colour to: $colour")
         ConnectionManager.writeCharacteristic(bleDevice, rgbControlCharacteristic, command.hexToBytes())
     }
 
     private fun readName() {
+        Log.i("LightningLightController", "Reading device name...")
         ConnectionManager.readCharacteristic(bleDevice, infoCharacteristic)
     }
 

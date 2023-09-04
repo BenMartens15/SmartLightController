@@ -32,6 +32,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.benmartens15.smartlightcontroller.R
 import com.benmartens15.smartlightcontroller.ble.ConnectionEventListener
 import com.benmartens15.smartlightcontroller.ble.ConnectionManager
+import com.benmartens15.smartlightcontroller.ble.toHexString
 import java.util.Locale
 import java.util.UUID
 
@@ -43,10 +44,13 @@ private const val LIGHT_CONTROLLER_NAME = "Lightning-LC2444"
 class DevicesFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
-
     private val scanResults = mutableListOf<ScanResult>()
-
     private val lightningDevices = mutableListOf<LightningLightController>()
+    private val scanSettings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
+    private val scanFilter = ScanFilter.Builder().setDeviceName(LIGHT_CONTROLLER_NAME).build()
+    private var isScanning = false
+    private var unconnectedDeviceIndex = 0
+
     private val deviceAdapter: DeviceAdapter by lazy {
         DeviceAdapter(lightningDevices)
     }
@@ -60,12 +64,6 @@ class DevicesFragment : Fragment() {
         bluetoothManager.adapter
     }
 
-    private val scanSettings =
-        ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
-
-    private val scanFilter =
-        ScanFilter.Builder().setDeviceName(LIGHT_CONTROLLER_NAME).build()
-
     private val requestMultiplePermissions = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { permissions ->
@@ -73,8 +71,6 @@ class DevicesFragment : Fragment() {
             Log.d("DevicesFragment", "${it.key} = ${it.value}")
         }
     }
-
-    private var isScanning = false
 
     /*******************************************
      * Activity function overrides
@@ -106,6 +102,17 @@ class DevicesFragment : Fragment() {
                 startBleScan()
             }
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        Log.i("DevicesFragment", "Disconnecting from devices")
+        scanResults.forEach {
+            ConnectionManager.teardownConnection(it.device)
+        }
+        unconnectedDeviceIndex = 0
+        ConnectionManager.unregisterListener(connectionEventListener)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -208,7 +215,11 @@ class DevicesFragment : Fragment() {
             if (indexQuery == -1) { // if there isn't already a scan result with the same address
                 with(result.device) {
                     Log.i("ScanCallback", "Found BLE device! Name: ${name ?: "Unnamed"}, address: $address")
-                    ConnectionManager.connect(this, requireContext())
+                    if (unconnectedDeviceIndex == 0) {
+                        Log.i("DevicesFragment", "Connecting to device $unconnectedDeviceIndex")
+                        ConnectionManager.connect(this, requireContext())
+                        unconnectedDeviceIndex++
+                    }
                 }
                 scanResults.add(result)
                 lightningDevices.add(LightningLightController(result))
@@ -218,15 +229,18 @@ class DevicesFragment : Fragment() {
 
     private val connectionEventListener by lazy {
         ConnectionEventListener().apply {
-            onConnectionSetupComplete = {
-                Log.i("DevicesFragment", "Connection complete")
-//                ConnectionManager.unregisterListener(this)
-                activity?.runOnUiThread {
-                    deviceAdapter.notifyItemInserted(lightningDevices.size - 1)
+            onCharacteristicRead = { _, characteristic ->
+                Log.i("DevicesFragment","Read from ${characteristic.uuid}: ${characteristic.value.toHexString()}")
+                if (unconnectedDeviceIndex < scanResults.size) {
+                    Log.i("DevicesFragment", "Connecting to device $unconnectedDeviceIndex")
+                    ConnectionManager.connect(scanResults[unconnectedDeviceIndex].device, requireContext())
+                    unconnectedDeviceIndex++
+                } else {
+                    Log.i("DevicesFragment", "Connected to all Lightning LC devices")
+                    activity?.runOnUiThread {
+                        deviceAdapter.notifyItemRangeInserted(0, lightningDevices.size)
+                    }
                 }
-            }
-            onDisconnect = {
-                Log.i("DevicesFragment", "Disconnected")
             }
         }
     }
