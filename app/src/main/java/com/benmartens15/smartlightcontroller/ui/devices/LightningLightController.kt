@@ -89,8 +89,17 @@ class LightningLightController(scanResult: ScanResult) {
 
     fun setRGBColour(colour: String) {
         val command = "0203$colour"
+        Log.d("LightningLightController", "Command: $command")
 
         Log.i("LightningLightController", "Setting colour to: $colour")
+        ConnectionManager.writeCharacteristic(bleDevice, rgbControlCharacteristic, command.hexToBytes())
+    }
+
+    fun setLightState(state: LightState) {
+        val command = "01010${state.ordinal}"
+        Log.d("LightningLightController", "Command: $command")
+
+        Log.i("LightningLightController", "Setting light state to: $state")
         ConnectionManager.writeCharacteristic(bleDevice, rgbControlCharacteristic, command.hexToBytes())
     }
 

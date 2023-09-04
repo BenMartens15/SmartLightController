@@ -48,9 +48,17 @@ class DeviceAdapter(private val items: List<LightningLightController>) : Recycle
         holder.switch.setOnCheckedChangeListener { buttonView, isChecked ->
 
             if (isChecked) {
-                item.setRGBColour("ff1300")
+                if (item.deviceType == DeviceType.RGB_CONTROLLER) {
+                    item.setRGBColour("ff1300")
+                } else if (item.deviceType == DeviceType.LIGHT_SWITCH) {
+                    item.setLightState(LightState.ON)
+                }
             } else {
-                item.setRGBColour("000000")
+                if (item.deviceType == DeviceType.RGB_CONTROLLER) {
+                    item.setRGBColour("000000")
+                } else if (item.deviceType == DeviceType.LIGHT_SWITCH) {
+                    item.setLightState(LightState.OFF)
+                }
             }
         }
     }
