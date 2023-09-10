@@ -104,16 +104,16 @@ class DevicesFragment : Fragment() {
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-
-        Log.i("DevicesFragment", "Disconnecting from devices")
-        scanResults.forEach {
-            ConnectionManager.teardownConnection(it.device)
-        }
-        unconnectedDeviceIndex = 0
-        ConnectionManager.unregisterListener(connectionEventListener)
-    }
+//    override fun onPause() {
+//        super.onPause()
+//
+//        Log.i("DevicesFragment", "Disconnecting from devices")
+//        scanResults.forEach {
+//            ConnectionManager.teardownConnection(it.device)
+//        }
+//        unconnectedDeviceIndex = 0
+//        ConnectionManager.unregisterListener(connectionEventListener)
+//    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)

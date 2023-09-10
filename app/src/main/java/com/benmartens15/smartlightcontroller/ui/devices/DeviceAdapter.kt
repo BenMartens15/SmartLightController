@@ -1,10 +1,12 @@
 package com.benmartens15.smartlightcontroller.ui.devices
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.benmartens15.smartlightcontroller.R
 import com.google.android.material.switchmaterial.SwitchMaterial
@@ -19,6 +21,7 @@ class DeviceAdapter(private val items: List<LightningLightController>) : Recycle
         val name: TextView = itemView.findViewById(R.id.text_view_device_name)
         val type: TextView = itemView.findViewById(R.id.text_view_device_type)
         val switch: SwitchMaterial = itemView.findViewById(R.id.material_switch)
+        val cardView: CardView = itemView.findViewById(R.id.card_view_device)
 
         fun bind(controller: LightningLightController) {
             name.text = controller.displayName ?: "Unnamed"
@@ -60,6 +63,17 @@ class DeviceAdapter(private val items: List<LightningLightController>) : Recycle
                     item.setLightState(LightState.OFF)
                 }
             }
+        }
+
+        holder.cardView.setOnClickListener {
+            val context = it.context
+            val intent = Intent(context, LightSwitchActivity::class.java)
+            intent.putExtra("DeviceName", item.displayName)
+            intent.putExtra("DeviceAddress", item.bleDevice.address)
+            intent.putExtra("LightState", item.state)
+            intent.putExtra("MotionEnabled", item.motionEnabled)
+            intent.putExtra("ControlCharacteristic", item.rgbControlCharacteristic)
+            context.startActivity(intent)
         }
     }
 

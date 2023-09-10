@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/text_view_device_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="24dp"
+        android:fontFamily="sans-serif"
+        android:textAlignment="center"
+        android:textSize="36sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Main Light" />
+
+    <TextView
+        android:id="@+id/text_view_light"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="@id/switch_light"
+        app:layout_constraintEnd_toStartOf="@id/switch_light"
+        app:layout_constraintTop_toTopOf="@id/switch_light"
+        android:text="Light" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/switch_light"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="36dp"
+        android:layout_marginEnd="32dp"
+        android:scaleX="2"
+        android:scaleY="2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/text_view_device_name" />
+
+    <TextView
+        android:id="@+id/text_view_motion_detection"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="@id/switch_motion_detection"
+        app:layout_constraintEnd_toStartOf="@id/switch_motion_detection"
+        app:layout_constraintTop_toTopOf="@id/switch_motion_detection"
+        android:text="Motion Detection" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/switch_motion_detection"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="36dp"
+        android:layout_marginEnd="32dp"
+        android:scaleX="2"
+        android:scaleY="2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/switch_light" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/text_input_shutoff_time"
+        style="@style/Theme.MaterialComponents.DayNight.DarkActionBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="36dp"
+        android:hint="No motion auto shutoff time"
+        app:placeholderText="minutes"
+        app:layout_constraintTop_toBottomOf="@id/switch_motion_detection">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_text_shutoff_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="2" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

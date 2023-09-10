@@ -37,9 +37,10 @@ class LightningLightController(scanResult: ScanResult) {
     } else {
         LightState.ON
     }
-    val deviceType = if (advData[26].toInt() == 0) {
+    val motionEnabled: Boolean = advData[26].toInt() != 0
+    val deviceType = if (advData[27].toInt() == 0) {
         DeviceType.RGB_CONTROLLER
-    } else if (advData[26].toInt() == 1) {
+    } else if (advData[27].toInt() == 1) {
         DeviceType.LIGHT_SWITCH
     } else {
         DeviceType.UNKNOWN
@@ -50,7 +51,7 @@ class LightningLightController(scanResult: ScanResult) {
         } ?: listOf()
     }
 
-    private val rgbControlCharacteristic: BluetoothGattCharacteristic by lazy {
+    val rgbControlCharacteristic: BluetoothGattCharacteristic by lazy {
         val uuid = characteristics.firstOrNull { it.uuid == RGB_CTRL_CHARACTERISTIC_UUID }
         uuid ?: throw NoSuchElementException("Control characteristic not found")
     }
