@@ -10,7 +10,7 @@
         android:id="@+id/text_view_device_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginVertical="24dp"
+        android:layout_marginVertical="15dp"
         android:fontFamily="sans-serif"
         android:textAlignment="center"
         android:textSize="36sp"
@@ -66,12 +66,14 @@
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/text_input_shutoff_time"
         style="@style/Theme.MaterialComponents.DayNight.DarkActionBar"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginVertical="36dp"
-        android:hint="No motion auto shutoff time"
-        app:placeholderText="minutes"
-        app:layout_constraintTop_toBottomOf="@id/switch_motion_detection">
+        android:layout_marginVertical="40dp"
+        android:layout_marginHorizontal="10dp"
+        android:hint="Auto shutoff time"
+        app:layout_constraintTop_toBottomOf="@id/switch_motion_detection"
+        app:layout_constraintEnd_toStartOf="@id/text_view_minutes"
+        app:layout_constraintStart_toStartOf="parent">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edit_text_shutoff_time"
@@ -79,5 +81,23 @@
             android:layout_height="wrap_content"
             tools:text="2" />
     </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/text_view_minutes"
+        android:text="minutes"
+        android:textSize="18sp"
+        app:layout_constraintTop_toTopOf="@id/text_input_shutoff_time"
+        app:layout_constraintBottom_toBottomOf="@id/text_input_shutoff_time"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_set"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:text="Set"
+        app:layout_constraintTop_toBottomOf="@id/text_input_shutoff_time" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

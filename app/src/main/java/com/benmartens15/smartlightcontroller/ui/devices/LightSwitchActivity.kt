@@ -70,6 +70,14 @@ class LightSwitchActivity : AppCompatActivity() {
                 ConnectionManager.writeCharacteristic(device, rgbControlCharacteristic, "060100".hexToBytes())
             }
         }
+
+        binding.buttonSet.setOnClickListener {
+            var seconds = binding.editTextShutoffTime.text.toString().toInt() * 60
+            if (seconds == 0) {
+                seconds = 300
+            }
+            ConnectionManager.writeCharacteristic(device, rgbControlCharacteristic, "0502${Integer.toHexString(seconds).padStart(4, '0')}".hexToBytes())
+        }
     }
 
     private fun String.hexToBytes() =
