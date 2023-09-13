@@ -1,13 +1,18 @@
 package com.benmartens15.smartlightcontroller.ui.devices
 
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.util.Log
+import android.view.inputmethod.InputMethodManager
 import com.benmartens15.smartlightcontroller.R
 import com.benmartens15.smartlightcontroller.ble.ConnectionManager
 import com.benmartens15.smartlightcontroller.databinding.ActivityLightSwitchBinding
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
 import java.util.Locale
 import java.util.UUID
 
@@ -57,17 +62,33 @@ class LightSwitchActivity : AppCompatActivity() {
 
         binding.switchLight.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                ConnectionManager.writeCharacteristic(device, rgbControlCharacteristic, "010101".hexToBytes())
+                ConnectionManager.writeCharacteristic(
+                    device,
+                    rgbControlCharacteristic,
+                    "010101".hexToBytes()
+                )
             } else {
-                ConnectionManager.writeCharacteristic(device, rgbControlCharacteristic, "010100".hexToBytes())
+                ConnectionManager.writeCharacteristic(
+                    device,
+                    rgbControlCharacteristic,
+                    "010100".hexToBytes()
+                )
             }
         }
 
         binding.switchMotionDetection.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                ConnectionManager.writeCharacteristic(device, rgbControlCharacteristic, "060101".hexToBytes())
+                ConnectionManager.writeCharacteristic(
+                    device,
+                    rgbControlCharacteristic,
+                    "060101".hexToBytes()
+                )
             } else {
-                ConnectionManager.writeCharacteristic(device, rgbControlCharacteristic, "060100".hexToBytes())
+                ConnectionManager.writeCharacteristic(
+                    device,
+                    rgbControlCharacteristic,
+                    "060100".hexToBytes()
+                )
             }
         }
 
@@ -76,10 +97,75 @@ class LightSwitchActivity : AppCompatActivity() {
             if (seconds == 0) {
                 seconds = 300
             }
-            ConnectionManager.writeCharacteristic(device, rgbControlCharacteristic, "0502${Integer.toHexString(seconds).padStart(4, '0')}".hexToBytes())
+            ConnectionManager.writeCharacteristic(
+                device,
+                rgbControlCharacteristic,
+                "0502${Integer.toHexString(seconds).padStart(4, '0')}".hexToBytes()
+            )
         }
+
+        binding.textViewDeviceName.setOnClickListener {
+            showChangeNameDialog()
+        }
+    }
+
+    private fun showChangeNameDialog() {
+        val builder = MaterialAlertDialogBuilder(this)
+        val dialogLayout = layoutInflater.inflate(R.layout.dialog_rename_device, null)
+        builder.setView(dialogLayout)
+
+        val nameTextInputEditText: TextInputEditText =
+            dialogLayout.findViewById(R.id.text_input_edit_text_device_name)
+        nameTextInputEditText.setText(binding.textViewDeviceName.text.toString())
+        nameTextInputEditText.selectAll()
+
+        builder.setPositiveButton("OK") { dialog, which ->
+            val newName = nameTextInputEditText.text.toString()
+            val newNameAscii = stringToHexAscii(newName)
+            binding.textViewDeviceName.text = newName
+
+            Log.i("LightSwitchActivity", "Setting name to $newName")
+            ConnectionManager.writeCharacteristic(
+                device,
+                rgbControlCharacteristic,
+                "04${
+                    Integer.toHexString(newName.length).padStart(2, '0')
+                }${newNameAscii}".hexToBytes()
+            )
+            dialog.dismiss()
+        }
+        builder.setNegativeButton("Cancel") { dialog, which ->
+            dialog.dismiss()
+        }
+
+        val dialog = builder.create()
+
+        // Request focus on the EditText and show the keyboard
+        nameTextInputEditText.requestFocus()
+        // Use a Handler to show the keyboard after a short delay
+        Handler().postDelayed({
+            val inputMethodManager =
+                getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.showSoftInput(
+                nameTextInputEditText,
+                InputMethodManager.SHOW_IMPLICIT
+            )
+        }, 200) // Delay in milliseconds
+
+        dialog.show()
     }
 
     private fun String.hexToBytes() =
         this.chunked(2).map { it.toUpperCase(Locale.US).toInt(16).toByte() }.toByteArray()
+
+    private fun stringToHexAscii(input: String): String {
+        val hexStringBuilder = StringBuilder()
+
+        for (char in input) {
+            val asciiHex = char.toInt().toString(16)
+            hexStringBuilder.append(asciiHex)
+        }
+
+        return hexStringBuilder.toString()
+    }
 }

@@ -11,6 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginVertical="15dp"
+        android:clickable="true"
         android:fontFamily="sans-serif"
         android:textAlignment="center"
         android:textSize="36sp"
@@ -24,11 +25,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="24dp"
+        android:text="Light"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="@id/switch_light"
         app:layout_constraintEnd_toStartOf="@id/switch_light"
-        app:layout_constraintTop_toTopOf="@id/switch_light"
-        android:text="Light" />
+        app:layout_constraintTop_toTopOf="@id/switch_light" />
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/switch_light"
@@ -46,11 +47,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="24dp"
+        android:text="Motion Detection"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="@id/switch_motion_detection"
         app:layout_constraintEnd_toStartOf="@id/switch_motion_detection"
-        app:layout_constraintTop_toTopOf="@id/switch_motion_detection"
-        android:text="Motion Detection" />
+        app:layout_constraintTop_toTopOf="@id/switch_motion_detection" />
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/switch_motion_detection"
@@ -68,12 +69,12 @@
         style="@style/Theme.MaterialComponents.DayNight.DarkActionBar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginVertical="40dp"
         android:layout_marginHorizontal="10dp"
+        android:layout_marginVertical="40dp"
         android:hint="Auto shutoff time"
-        app:layout_constraintTop_toBottomOf="@id/switch_motion_detection"
         app:layout_constraintEnd_toStartOf="@id/text_view_minutes"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/switch_motion_detection">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edit_text_shutoff_time"
@@ -83,14 +84,14 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
+        android:id="@+id/text_view_minutes"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/text_view_minutes"
         android:text="minutes"
         android:textSize="18sp"
-        app:layout_constraintTop_toTopOf="@id/text_input_shutoff_time"
         app:layout_constraintBottom_toBottomOf="@id/text_input_shutoff_time"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/text_input_shutoff_time" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/button_set"
