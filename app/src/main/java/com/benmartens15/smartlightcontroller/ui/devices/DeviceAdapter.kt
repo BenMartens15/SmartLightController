@@ -66,14 +66,23 @@ class DeviceAdapter(private val items: List<LightningLightController>) : Recycle
         }
 
         holder.cardView.setOnClickListener {
-            val context = it.context
-            val intent = Intent(context, LightSwitchActivity::class.java)
-            intent.putExtra("DeviceName", item.displayName)
-            intent.putExtra("DeviceAddress", item.bleDevice.address)
-            intent.putExtra("LightState", item.state)
-            intent.putExtra("MotionEnabled", item.motionEnabled)
-            intent.putExtra("ControlCharacteristic", item.rgbControlCharacteristic)
-            context.startActivity(intent)
+            if (item.deviceType == DeviceType.LIGHT_SWITCH) {
+                val context = it.context
+                val intent = Intent(context, LightSwitchActivity::class.java)
+                intent.putExtra("DeviceName", item.displayName)
+                intent.putExtra("DeviceAddress", item.bleDevice.address)
+                intent.putExtra("LightState", item.state)
+                intent.putExtra("MotionEnabled", item.motionEnabled)
+                intent.putExtra("ControlCharacteristic", item.rgbControlCharacteristic)
+                context.startActivity(intent)
+            } else if (item.deviceType == DeviceType.RGB_CONTROLLER) {
+                val context = it.context
+                val intent = Intent(context, RgbControllerActivity::class.java)
+                intent.putExtra("DeviceName", item.displayName)
+                intent.putExtra("DeviceAddress", item.bleDevice.address)
+                intent.putExtra("ControlCharacteristic", item.rgbControlCharacteristic)
+                context.startActivity(intent)
+            }
         }
     }
 

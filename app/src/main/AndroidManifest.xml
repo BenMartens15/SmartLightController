@@ -20,9 +20,11 @@
         android:theme="@style/Theme.SmartLightController"
         tools:targetApi="31">
         <activity
+            android:name=".ui.devices.RgbControllerActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.devices.LightSwitchActivity"
-            android:exported="false"
-            android:parentActivityName=".MainActivity"/>
+            android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

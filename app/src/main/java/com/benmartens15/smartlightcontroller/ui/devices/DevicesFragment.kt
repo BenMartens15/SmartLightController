@@ -83,13 +83,6 @@ class DevicesFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_devices, container, false)
         recyclerView = view.findViewById(R.id.recycler_view_devices)
 
-        return view
-    }
-
-    override fun onResume() {
-        super.onResume()
-        setupRecyclerView()
-
         if (!checkPermissions()) {
             Log.i("DevicesFragment", "Required permissions not granted - requesting them")
             requestPermissions()
@@ -102,18 +95,14 @@ class DevicesFragment : Fragment() {
                 startBleScan()
             }
         }
+
+        return view
     }
 
-//    override fun onPause() {
-//        super.onPause()
-//
-//        Log.i("DevicesFragment", "Disconnecting from devices")
-//        scanResults.forEach {
-//            ConnectionManager.teardownConnection(it.device)
-//        }
-//        unconnectedDeviceIndex = 0
-//        ConnectionManager.unregisterListener(connectionEventListener)
-//    }
+    override fun onResume() {
+        super.onResume()
+        setupRecyclerView()
+    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
