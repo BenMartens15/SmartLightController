@@ -10,16 +10,13 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.benmartens15.smartlightcontroller.R
 import com.google.android.material.switchmaterial.SwitchMaterial
-import java.util.UUID
-
-private val RGB_CTRL_CHARACTERISTIC_UUID = UUID.fromString("f19a2445-96fe-4d87-a476-68a7a8d0b7ba")
 
 @SuppressLint("MissingPermission") // probably figure out how to handle this properly at some point
 class DeviceAdapter(private val items: List<LightningLightController>) : RecyclerView.Adapter<DeviceAdapter.DeviceViewHolder>() {
 
     class DeviceViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val name: TextView = itemView.findViewById(R.id.text_view_device_name)
-        val type: TextView = itemView.findViewById(R.id.text_view_device_type)
+        private val type: TextView = itemView.findViewById(R.id.text_view_device_type)
         val switch: SwitchMaterial = itemView.findViewById(R.id.material_switch)
         val cardView: CardView = itemView.findViewById(R.id.card_view_device)
 
@@ -69,18 +66,12 @@ class DeviceAdapter(private val items: List<LightningLightController>) : Recycle
             if (item.deviceType == DeviceType.LIGHT_SWITCH) {
                 val context = it.context
                 val intent = Intent(context, LightSwitchActivity::class.java)
-                intent.putExtra("DeviceName", item.displayName)
-                intent.putExtra("DeviceAddress", item.bleDevice.address)
-                intent.putExtra("LightState", item.state)
-                intent.putExtra("MotionEnabled", item.motionEnabled)
-                intent.putExtra("ControlCharacteristic", item.rgbControlCharacteristic)
+                intent.putExtra("Device", item)
                 context.startActivity(intent)
             } else if (item.deviceType == DeviceType.RGB_CONTROLLER) {
                 val context = it.context
                 val intent = Intent(context, RgbControllerActivity::class.java)
-                intent.putExtra("DeviceName", item.displayName)
-                intent.putExtra("DeviceAddress", item.bleDevice.address)
-                intent.putExtra("ControlCharacteristic", item.rgbControlCharacteristic)
+                intent.putExtra("Device", item)
                 context.startActivity(intent)
             }
         }
